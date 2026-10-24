@@ -1,0 +1,70 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: beauty-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: beauty-api
+  template:
+    metadata:
+      labels:
+        app: beauty-api
+    spec:
+      containers:
+        - name: api
+          image: beauty-studio-api:v2
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: APP_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: beauty-api-config
+                  key: APP_ENV
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: beauty-db-config
+                  key: DB_HOST
+
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: beauty-db-config
+                  key: DB_PORT
+
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: beauty-db-config
+                  key: DB_NAME
+
+            - name: DB_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: beauty-db-config
+                  key: DB_USER
+
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: beauty-api-secret
+                  key: DB_PASSWORD
+          ports:
+            - containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 20
+
+
